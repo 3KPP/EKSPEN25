@@ -2,52 +2,174 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Alphabet Keypad</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Keypad</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
+      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      background: #f2f2f2;
-      font-family: Arial, sans-serif;
+      background-color: #0c0c1d;
+      font-family: 'Orbitron', sans-serif;
+      color: #00ffff;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ✨ STAR PARTICLES CANVAS */
+    #stars {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    /* Container for the Keypad */
+    .container {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    h1 {
+      font-size: 30px;
+      color: #C9DB10; /* Yellow-Green */
+      text-shadow: 0 0 12px #C9DB10;
     }
 
     .keypad {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
-      max-width: 400px;
-      gap: 10px;
-      padding: 20px;
-      background: #fff;
-      border-radius: 15px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      max-width: 420px;
+      gap: 12px;
+      padding: 30px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 20px;
+      box-shadow: 0 0 40px rgba(0, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
     }
 
     button {
+      position: relative;
       padding: 20px;
-      font-size: 22px;
+      font-size: 20px;
       border: none;
-      border-radius: 12px;
-      background: #007bff;
-      color: white;
+      border-radius: 15px;
+      background: linear-gradient(145deg, #35468C, #1d1d2c); /* Blue Color */
+      color: #C9DB10; /* Yellow-Green */
+      box-shadow: 0 0 8px rgba(0, 255, 255, 0.2);
       cursor: pointer;
-      transition: 0.2s;
+      transition: all 0.2s ease;
+      overflow: hidden;
+    }
+
+    button::after {
+      content: "";
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, #C9DB1033 10%, transparent 70%);
+      transform: translate(-50%, -50%) scale(0);
+      opacity: 0;
+      transition: transform 0.4s, opacity 0.4s;
+    }
+
+    button:hover::after {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
     }
 
     button:hover {
-      background: #0056b3;
+      transform: scale(1.05);
+      background: #C9DB10; /* Yellow-Green */
+      color: #35468C; /* Blue */
+      box-shadow: 0 0 20px #C9DB1011;
+    }
+
+    @media (max-width: 500px) {
+      h1 {
+        font-size: 22px;
+      }
+      button {
+        padding: 16px;
+        font-size: 18px;
+      }
     }
   </style>
 </head>
 <body>
 
-  <div class="keypad" id="keypad"></div>
+  <!-- ✨ Particle Stars -->
+  <canvas id="stars"></canvas>
+
+  <div class="container">
+    <h1>3KPP 2025</h1>
+    <div class="keypad" id="keypad"></div>
+  </div>
 
   <audio id="beepSound" src="beep.wav" preload="auto"></audio>
 
   <script>
+    // ✨ STAR PARTICLES
+    const canvas = document.getElementById("stars");
+    const ctx = canvas.getContext("2d");
+    let stars = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    for (let i = 0; i < 150; i++) {
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * 1.2,
+        alpha: Math.random(),
+        delta: Math.random() * 0.02
+      });
+    }
+
+    function drawStars() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#C9DB10"; /* Yellow-Green */
+
+      stars.forEach(star => {
+        ctx.globalAlpha = star.alpha;
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        star.alpha += star.delta;
+        if (star.alpha <= 0 || star.alpha >= 1) star.delta = -star.delta;
+      });
+
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(drawStars);
+    }
+
+    drawStars();
+
+    // 🧑‍🚀 Keypad Logic
     const keypad = document.getElementById("keypad");
     const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
     const beep = document.getElementById("beepSound");
