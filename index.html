@@ -25,21 +25,38 @@
       position: relative;
     }
 
-    /* ✨ STAR PARTICLES CANVAS */
-    #stars {
+    canvas {
       position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 0;
-      width: 100%;
-      height: 100%;
       pointer-events: none;
     }
 
-    /* Container for the Keypad */
+    #stars {
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+    }
+
+    #patterns {
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+    }
+
+    #wave {
+      z-index: 2;
+      width: 100%;
+      height: 120px;
+      bottom: 0;
+      left: 0;
+    }
+
     .container {
       position: relative;
-      z-index: 2;
+      z-index: 3;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -48,7 +65,7 @@
 
     h1 {
       font-size: 30px;
-      color: #C9DB10; /* Yellow-Green */
+      color: #C9DB10;
       text-shadow: 0 0 12px #C9DB10;
     }
 
@@ -70,8 +87,8 @@
       font-size: 20px;
       border: none;
       border-radius: 15px;
-      background: linear-gradient(145deg, #35468C, #1d1d2c); /* Blue Color */
-      color: #C9DB10; /* Yellow-Green */
+      background: linear-gradient(145deg, #35468C, #1d1d2c);
+      color: #C9DB10;
       box-shadow: 0 0 8px rgba(0, 255, 255, 0.2);
       cursor: pointer;
       transition: all 0.2s ease;
@@ -81,7 +98,8 @@
     button::after {
       content: "";
       position: absolute;
-      top: 50%; left: 50%;
+      top: 50%;
+      left: 50%;
       width: 200%;
       height: 200%;
       background: radial-gradient(circle, #C9DB1033 10%, transparent 70%);
@@ -97,8 +115,8 @@
 
     button:hover {
       transform: scale(1.05);
-      background: #C9DB10; /* Yellow-Green */
-      color: #35468C; /* Blue */
+      background: #C9DB10;
+      color: #35468C;
       box-shadow: 0 0 20px #C9DB1011;
     }
 
@@ -115,9 +133,12 @@
 </head>
 <body>
 
-  <!-- ✨ Particle Stars -->
+  <!-- ✨ Background Layers -->
   <canvas id="stars"></canvas>
+  <canvas id="patterns"></canvas>
+  <canvas id="wave"></canvas>
 
+  <!-- 🔘 Main UI -->
   <div class="container">
     <h1>3KPP 2025</h1>
     <div class="keypad" id="keypad"></div>
@@ -125,24 +146,25 @@
 
   <audio id="beepSound" src="beep.wav" preload="auto"></audio>
 
+  <!-- 🎯 JavaScript Effects -->
   <script>
-    // ✨ STAR PARTICLES
-    const canvas = document.getElementById("stars");
-    const ctx = canvas.getContext("2d");
+    // 🌌 Stars
+    const starsCanvas = document.getElementById("stars");
+    const starsCtx = starsCanvas.getContext("2d");
+    starsCanvas.width = window.innerWidth;
+    starsCanvas.height = window.innerHeight;
     let stars = [];
 
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+    function resizeStars() {
+      starsCanvas.width = window.innerWidth;
+      starsCanvas.height = window.innerHeight;
     }
-
-    window.addEventListener("resize", resizeCanvas);
-    resizeCanvas();
+    window.addEventListener("resize", resizeStars);
 
     for (let i = 0; i < 150; i++) {
       stars.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
+        x: Math.random() * starsCanvas.width,
+        y: Math.random() * starsCanvas.height,
         radius: Math.random() * 1.2,
         alpha: Math.random(),
         delta: Math.random() * 0.02
@@ -150,26 +172,120 @@
     }
 
     function drawStars() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#C9DB10"; /* Yellow-Green */
-
+      starsCtx.clearRect(0, 0, starsCanvas.width, starsCanvas.height);
+      starsCtx.fillStyle = "#C9DB10";
       stars.forEach(star => {
-        ctx.globalAlpha = star.alpha;
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-        ctx.fill();
-
+        starsCtx.globalAlpha = star.alpha;
+        starsCtx.beginPath();
+        starsCtx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        starsCtx.fill();
         star.alpha += star.delta;
         if (star.alpha <= 0 || star.alpha >= 1) star.delta = -star.delta;
       });
-
-      ctx.globalAlpha = 1;
+      starsCtx.globalAlpha = 1;
       requestAnimationFrame(drawStars);
     }
-
     drawStars();
 
-    // 🧑‍🚀 Keypad Logic
+    // 🧩 Geometry Patterns
+    const patternCanvas = document.getElementById("patterns");
+    const patternCtx = patternCanvas.getContext('2d');
+
+    function resizePatternCanvas() {
+      patternCanvas.width = window.innerWidth;
+      patternCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizePatternCanvas);
+    resizePatternCanvas();
+
+    let shapes = [];
+    function createShapes() {
+      const count = 40;
+      for (let i = 0; i < count; i++) {
+        shapes.push({
+          x: Math.random() * patternCanvas.width,
+          y: Math.random() * patternCanvas.height,
+          size: 20 + Math.random() * 20,
+          speed: 0.3 + Math.random() * 0.7,
+          direction: Math.random() * Math.PI * 2,
+          opacity: 0.03 + Math.random() * 0.07,
+          type: Math.random() > 0.5 ? 'hex' : 'triangle'
+        });
+      }
+    }
+    createShapes();
+
+    function drawHex(x, y, size, ctx) {
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const angle = Math.PI / 3 * i;
+        ctx.lineTo(x + size * Math.cos(angle), y + size * Math.sin(angle));
+      }
+      ctx.closePath();
+    }
+
+    function drawTriangle(x, y, size, ctx) {
+      ctx.beginPath();
+      for (let i = 0; i < 3; i++) {
+        const angle = (Math.PI * 2 / 3) * i - Math.PI / 2;
+        ctx.lineTo(x + size * Math.cos(angle), y + size * Math.sin(angle));
+      }
+      ctx.closePath();
+    }
+
+    function drawPatterns() {
+      patternCtx.clearRect(0, 0, patternCanvas.width, patternCanvas.height);
+      shapes.forEach(shape => {
+        patternCtx.save();
+        patternCtx.strokeStyle = `rgba(201, 219, 16, ${shape.opacity})`;
+        patternCtx.lineWidth = 1;
+        shape.type === 'hex'
+          ? drawHex(shape.x, shape.y, shape.size, patternCtx)
+          : drawTriangle(shape.x, shape.y, shape.size, patternCtx);
+        patternCtx.stroke();
+        patternCtx.restore();
+
+        shape.x += Math.cos(shape.direction) * shape.speed;
+        shape.y += Math.sin(shape.direction) * shape.speed;
+        if (shape.x < -50) shape.x = patternCanvas.width + 50;
+        if (shape.x > patternCanvas.width + 50) shape.x = -50;
+        if (shape.y < -50) shape.y = patternCanvas.height + 50;
+        if (shape.y > patternCanvas.height + 50) shape.y = -50;
+      });
+      requestAnimationFrame(drawPatterns);
+    }
+    drawPatterns();
+
+    // 🌊 Sinusoidal Wave (Bottom)
+    const waveCanvas = document.getElementById("wave");
+    const waveCtx = waveCanvas.getContext("2d");
+
+    function resizeWaveCanvas() {
+      waveCanvas.width = window.innerWidth;
+      waveCanvas.height = 120;
+    }
+    window.addEventListener('resize', resizeWaveCanvas);
+    resizeWaveCanvas();
+
+    function drawWave(time = 0) {
+      waveCtx.clearRect(0, 0, waveCanvas.width, waveCanvas.height);
+      waveCtx.beginPath();
+      for (let x = 0; x < waveCanvas.width; x++) {
+        let y = Math.sin((x + time / 10) * 0.04) * 15 +
+                Math.cos((x + time / 25) * 0.05) * 10 +
+                60;
+        waveCtx.lineTo(x, y);
+      }
+      waveCtx.lineTo(waveCanvas.width, waveCanvas.height);
+      waveCtx.lineTo(0, waveCanvas.height);
+      waveCtx.closePath();
+      waveCtx.fillStyle = '#00ffff22';
+      waveCtx.fill();
+      requestAnimationFrame(drawWave);
+    }
+    drawWave();
+
+    // ⌨️ Keypad Buttons
     const keypad = document.getElementById("keypad");
     const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
     const beep = document.getElementById("beepSound");
@@ -185,6 +301,5 @@
       keypad.appendChild(button);
     });
   </script>
-
 </body>
 </html>
