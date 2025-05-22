@@ -84,12 +84,12 @@
 
     .video-container {
       display: none;
-      position: absolute;
+      position: fixed;
       top: 0; left: 0;
       width: 100vw;
       height: 100vh;
       background: black;
-      z-index: 5;
+      z-index: 999;
       justify-content: center;
       align-items: center;
     }
@@ -180,13 +180,28 @@
     });
 
     // Enter button
-    createButton("⏎", () => {
+    createButton("⏎", async () => {
       if (input.length > 0) {
         keypadContainer.style.display = "none";
         videoScreen.style.display = "flex";
-        video.controls = false;    // Hide controls
-        video.muted = false;       // Ensure sound is on
+
+        video.controls = false;
+        video.muted = false;
         video.currentTime = 0;
+
+        // Request fullscreen to hide web bar
+        try {
+          if (video.requestFullscreen) {
+            await video.requestFullscreen();
+          } else if (video.webkitRequestFullscreen) {
+            await video.webkitRequestFullscreen();
+          } else if (video.msRequestFullscreen) {
+            await video.msRequestFullscreen();
+          }
+        } catch (err) {
+          console.warn("Fullscreen request failed:", err);
+        }
+
         video.play();
       }
     });
